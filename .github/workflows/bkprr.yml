@@ -1,0 +1,49 @@
+name: Backport SuSFS v1.5.12
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backport:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout target kernel
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # perlu semua riwayat untuk cherry-pick
+
+      - name: Setup Git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add source remote (kylieeXD surya)
+        run: |
+          git remote add susfs-src https://github.com/kylieeXD/android_kernel_xiaomi_rosemary
+          git fetch susfs-src
+          
+      - name: Try to cherry-pick SuSFS commit
+        id: cherry
+        run: |
+          set -e
+          git cherry-pick 78a7c67dd413d1b08a54c62b8aba160593967d7d || echo "conflict" > .conflict
+
+      - name: Handle conflicts if any
+        if: ${{ hashFiles('.conflict') != '' }}
+        run: |
+          echo "::warning::Cherry-pick caused conflicts, keeping partial patch"
+          git status
+          git add .
+          git commit -m "Partial backport: SuSFS v1.5.12 (manual merge needed)"
+
+      - name: Push backport branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin main --force
+
+      - name: Show summary
+        run: |
+          echo "✅ SuSFS v1.5.12 backport created on branch 'backport/susfs-v1.5.12'"
+          echo "If there were conflicts, please resolve manually in your repo."
