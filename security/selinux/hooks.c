@@ -2458,7 +2458,6 @@ static u32 ksu_sid __maybe_unused;
 char *secdata __maybe_unused;
 int error __maybe_unused;
 u32 seclen __maybe_unused;
-#endif
 	
 	if (!nnp && !nosuid)
 		return 0; /* neither NNP nor nosuid */
