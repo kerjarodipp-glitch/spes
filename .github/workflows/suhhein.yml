@@ -33,4 +33,4 @@ jobs:
 
       - name: Force push to origin
         run: |
-          git push origin HEAD --force
+          git push origin main --force
