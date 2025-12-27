@@ -1,0 +1,40 @@
+name: Revert Commit
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: "Branch tempat revert diterapkan"
+        required: true
+        default: "main"
+      commit_sha:
+        description: "SHA commit yang ingin di-revert (bisa lebih dari satu, pisahkan spasi)"
+        required: true
+
+jobs:
+  revert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Switch to target branch
+        run: |
+          git fetch origin ${{ inputs.target_branch }}
+          git checkout ${{ inputs.target_branch }}
+
+      - name: Revert commit(s)
+        run: |
+          git revert --no-edit ${{ inputs.commit_sha }}
+
+      - name: Push changes
+        run: |
+          git push origin HEAD:${{ inputs.target_branch }}
